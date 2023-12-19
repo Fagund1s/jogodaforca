@@ -1,2 +1,2 @@
-# jogodaforca
-Jogo da forca
+# jogo da forca
+O programa lê palavras de um arquivo, escolhe aleatoriamente uma delas e desafia o usuário a adivinhar a palavra por meio de tentativas de letras. O jogo exibe o estado atual, incluindo as letras adivinhadas, letras tentadas e o número de tentativas restantes. O jogador continua a adivinhar até esgotar as tentativas ou adivinhar a palavra corretamente. Ao final, o programa informa se o jogador ganhou ou perdeu, revelando a palavra secreta. O código inclui uma estrutura modular com uma classe "Forca" que encapsula a lógica do jogo, promovendo organização e reutilização do código. O projeto demonstra conceitos como manipulação de arquivos, uso de classes, vetores.
