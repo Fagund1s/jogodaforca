@@ -1,28 +1,62 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
 
-using namespace std;
+class Jogo {
 
-class Forca {
+public:
+    virtual void jogar() = 0;
+    virtual ~Jogo() {}
+};
+
+class Forca : public Jogo {
+    
 private:
-    string palavraSecreta;
-    vector<char> letrasTentadas;
+    char* palavraSecreta;
+    std::vector<char> letrasTentadas;
     int maxTentativas;
     int tentativasRestantes;
 
 public:
-    Forca(const string& palavra) : palavraSecreta(palavra), maxTentativas(6), tentativasRestantes(maxTentativas) {}
+    // Construtor padrão
+    Forca() : palavraSecreta(nullptr), maxTentativas(6), tentativasRestantes(maxTentativas) {}
 
-    void jogar() {
+    // Construtor com palavra escolhida
+    Forca(const std::string& palavra) : maxTentativas(6), tentativasRestantes(maxTentativas) {
+        alocarMemoria(palavra);
+    }
+
+    // Destrutor
+    ~Forca() {
+        liberarMemoria();
+    }
+
+    // Método para alocar dinamicamente uma nova palavra
+    void alocarPalavra() {
+        std::vector<std::string> palavras = lerPalavrasDeArquivo("C:/Users/Fagundes/Desktop/projeto/text/palavras.txt");
+
+        if (palavras.empty()) {
+            std::cerr << "Nenhuma palavra encontrada no arquivo." << std::endl;
+            exit(1);
+        }
+
+        std::srand(std::time(0));
+        int indice = std::rand() % palavras.size();
+        alocarMemoria(palavras[indice]);
+    }
+
+    // Método para jogar o jogo
+    void jogar() override {
         while (tentativasRestantes > 0 && !jogoGanho()) {
             exibirStatus();
 
             char letra;
-            cout << "Digite uma letra: ";
-            cin >> letra;
+            std::cout << "Digite uma letra: ";
+            std::cin >> letra;
 
             if (tentativaValida(letra)) {
                 letrasTentadas.push_back(letra);
@@ -30,37 +64,57 @@ public:
                     tentativasRestantes--;
                 }
             } else {
-                cout << "Letra já usada." << endl;
+                std::cout << "Letra já tentada. Tente novamente." << std::endl;
             }
         }
 
         exibirResultado();
+        gerarRelatorio();
+    }
+
+    // Método estático
+    static std::vector<std::string> lerPalavrasDeArquivo(const std::string& nomeArquivo) {
+        std::vector<std::string> palavras;
+        std::ifstream arquivo(nomeArquivo);
+
+        if (arquivo.is_open()) {
+            std::string palavra;
+            while (arquivo >> palavra) {
+                palavras.push_back(palavra);
+            }
+            arquivo.close();
+        } else {
+            std::cerr << "Erro ao abrir o arquivo " << nomeArquivo << std::endl;
+        }
+
+        return palavras;
     }
 
 private:
+    // Métodos de exibição e verificação
     void exibirStatus() const {
-        cout << "Palavra: ";
-        for (char c : palavraSecreta) {
-            if (letraTentada(c)) {
-                cout << c << " ";
+        std::cout << "Palavra: ";
+        for (char* ptr = palavraSecreta; *ptr != '\0'; ++ptr) {
+            if (letraTentada(*ptr)) {
+                std::cout << *ptr << " ";
             } else {
-                cout << "_ ";
+                std::cout << "_ ";
             }
         }
-        cout << endl;
+        std::cout << std::endl;
 
-        cout << "Letras usadas: ";
+        std::cout << "Letras Tentadas: ";
         for (char c : letrasTentadas) {
-            cout << c << " ";
+            std::cout << c << " ";
         }
-        cout << endl;
+        std::cout << std::endl;
 
-        cout << "Tentativas: " << tentativasRestantes << endl;
+        std::cout << "Tentativas Restantes: " << tentativasRestantes << std::endl;
     }
 
     bool letraNaPalavra(char letra) const {
-        for (char c : palavraSecreta) {
-            if (c == letra) {
+        for (char* ptr = palavraSecreta; *ptr != '\0'; ++ptr) {
+            if (*ptr == letra) {
                 return true;
             }
         }
@@ -81,8 +135,8 @@ private:
     }
 
     bool jogoGanho() const {
-        for (char c : palavraSecreta) {
-            if (!letraTentada(c)) {
+        for (char* ptr = palavraSecreta; *ptr != '\0'; ++ptr) {
+            if (!letraTentada(*ptr)) {
                 return false;
             }
         }
@@ -91,43 +145,43 @@ private:
 
     void exibirResultado() const {
         if (jogoGanho()) {
-            cout << "Você ganhou. A palavra era: " << palavraSecreta << endl;
+            std::cout << "Jogo ganho." << palavraSecreta << std::endl;
         } else {
-            cout << "Você perdeu. A palavra era: " << palavraSecreta << endl;
+            std::cout << "Jogo perdido." << palavraSecreta << std::endl;
         }
+    }
+
+    void gerarRelatorio() const {
+        std::ofstream relatorio("C:/Users/Fagundes/Desktop/projeto/text/relatorio.txt");
+        if (relatorio.is_open()) {
+            relatorio << "Relatório do Jogo da Forca\n";
+            relatorio << "Palavra: " << palavraSecreta << "\n";
+            relatorio << "Tentativas Restantes: " << tentativasRestantes << "\n";
+            relatorio << "Palavra Descoberta: " << (jogoGanho() ? "Sim" : "Não") << "\n";
+            relatorio.close();
+            std::cout << "Arquivo gerado com sucesso.'.\n";
+        } else {
+            std::cerr << "Erro.\n";
+        }
+    }
+
+    // Métodos de alocação e liberação de memória
+    void alocarMemoria(const std::string& palavra) {
+        liberarMemoria();
+
+        palavraSecreta = new char[palavra.length() + 1];
+        std::strcpy(palavraSecreta, palavra.c_str());
+    }
+
+    void liberarMemoria() {
+        delete[] palavraSecreta;
+        palavraSecreta = nullptr;
     }
 };
 
-vector<string> lerPalavrasDeArquivo(const string& nomeArquivo) {
-    vector<string> palavras;
-    ifstream arquivo(nomeArquivo);
-
-    if (arquivo.is_open()) {
-        string palavra;
-        while (arquivo >> palavra) {
-            palavras.push_back(palavra);
-        }
-        arquivo.close();
-    } else {
-        cerr << "Erro ao abrir o arquivo " << nomeArquivo << endl;
-    }
-
-    return palavras;
-}
-
 int main() {
-    vector<string> palavras = lerPalavrasDeArquivo("C:/Users/Fagundes/Desktop/projeto/text/palavras.txt");
-
-    if (palavras.empty()) {
-        cerr << "Nenhuma palavra encontrada no arquivo." << endl;
-        return 1;
-    }
-
-    srand(time(0));
-    int indice = rand() % palavras.size();
-    string palavraEscolhida = palavras[indice];
-
-    Forca jogo(palavraEscolhida);
+    Forca jogo;
+    jogo.alocarPalavra();
 
     jogo.jogar();
 
