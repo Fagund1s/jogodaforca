@@ -22,20 +22,17 @@ private:
     int tentativasRestantes;
 
 public:
-    // Construtor padrão
+
     Forca() : palavraSecreta(nullptr), maxTentativas(6), tentativasRestantes(maxTentativas) {}
 
-    // Construtor com palavra escolhida
     Forca(const std::string& palavra) : maxTentativas(6), tentativasRestantes(maxTentativas) {
         alocarMemoria(palavra);
     }
 
-    // Destrutor
     ~Forca() {
         liberarMemoria();
     }
 
-    // Método para alocar dinamicamente uma nova palavra
     void alocarPalavra() {
         std::vector<std::string> palavras = lerPalavrasDeArquivo("C:/Users/Fagundes/Desktop/projeto/text/palavras.txt");
 
@@ -49,8 +46,16 @@ public:
         alocarMemoria(palavras[indice]);
     }
 
-    // Método para jogar o jogo
-    void jogar() override {
+    void alocarPalavra(const std::string& palavra) {
+        alocarMemoria(palavra);
+    }
+
+    void alocarPalavra(const std::string& palavra, int maxTentativas) {
+        this->maxTentativas = maxTentativas;
+        alocarMemoria(palavra);
+    }
+
+    void jogar() override{
         while (tentativasRestantes > 0 && !jogoGanho()) {
             exibirStatus();
 
@@ -72,7 +77,6 @@ public:
         gerarRelatorio();
     }
 
-    // Método estático
     static std::vector<std::string> lerPalavrasDeArquivo(const std::string& nomeArquivo) {
         std::vector<std::string> palavras;
         std::ifstream arquivo(nomeArquivo);
@@ -91,7 +95,7 @@ public:
     }
 
 private:
-    // Métodos de exibição e verificação
+
     void exibirStatus() const {
         std::cout << "Palavra: ";
         for (char* ptr = palavraSecreta; *ptr != '\0'; ++ptr) {
@@ -165,7 +169,6 @@ private:
         }
     }
 
-    // Métodos de alocação e liberação de memória
     void alocarMemoria(const std::string& palavra) {
         liberarMemoria();
 
